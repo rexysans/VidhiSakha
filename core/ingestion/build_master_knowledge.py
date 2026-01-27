@@ -14,6 +14,19 @@ def parse_range(range_str):
     return None, None
 
 
+def normalize(article_id):
+    """
+    Converts:
+      "51A"   -> (51, "A")
+      "243ZG" -> (243, "ZG")
+    So tuple comparison works correctly.
+    """
+    match = re.match(r"(\d+)([A-Z]*)", article_id)
+    num = int(match.group(1))
+    suffix = match.group(2)
+    return (num, suffix)
+
+
 def ingest_data():
     # 1. Load Data
     index_df = pd.read_csv("dataset/Index.csv", encoding="latin1").dropna(
@@ -38,43 +51,42 @@ def ingest_data():
     articles_list = []
     for i, row in const_df.iterrows():
         text = str(row["Articles"])
-        # Regex to find the Article ID at the start of the text (e.g., "1.", "51A.", "243ZG.")
+
+        # Extract Article ID at start (e.g. "1.", "51A.", "243ZG.")
         match = re.match(r"^([0-9]+[A-Z]*)\.", text)
-        if match:
-            article_id = match.group(1)
-            # Find which part this article belongs to based on the range
-            # (Note: Simplification for v1; real logic uses list index matching)
-            parent_part_uid = None
-            for p in parts_list:
+        if not match:
+            continue
 
-                # Basic check: if ID is between start and end digits
-                if p["article_range"]["start"] and article_id:
-                    # Logic to check if article_id fits in part p
-                    # This is where your 'Reasoning Engine' eventually takes over
-                    try:
-                        current_id = int(re.sub("[^0-9]", "", article_id))
-                        start_id = int(
-                            re.sub("[^0-9]", "", p["article_range"]["start"])
-                        )
-                        end_id = int(re.sub("[^0-9]", "", p["article_range"]["end"]))
-                        if start_id <= current_id <= end_id:
-                            parent_part_uid = p["part_uid"]
-                            break
+        article_id = match.group(1)
+        parent_part_uid = None
 
-                    except:
-                        continue
+        for p in parts_list:
+            if not p["article_range"]["start"] or not p["article_range"]["end"]:
+                continue
 
-            articles_list.append(
-                {
-                    "article_uid": i,
-                    "article_id": article_id,  # legal id
-                    "full_text": text.strip(),
-                    "title": text.split("\n")[0],
-                    "part_uid": parent_part_uid,  # system relation
-                }
-            )
+            try:
+                cur = normalize(article_id)
+                start = normalize(p["article_range"]["start"])
+                end = normalize(p["article_range"]["end"])
 
-    # 4. Save to Structured JSON (The "Knowledge Layer" Source)
+                if start <= cur <= end:
+                    parent_part_uid = p["part_uid"]
+                    break
+            except Exception as e:
+                print("Mapping error:", article_id, p["article_range"], e)
+                continue
+
+        articles_list.append(
+            {
+                "article_uid": i,
+                "article_id": article_id,
+                "full_text": text.strip(),
+                "title": text.split("\n")[0],
+                "part_uid": parent_part_uid,
+            }
+        )
+
+    # 4. Save Knowledge Graph JSON
     output = {"parts": parts_list, "articles": articles_list}
     with open("dataset/vidhisakha_kb_v1.json", "w") as f:
         json.dump(output, f, indent=4)
