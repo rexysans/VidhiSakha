@@ -3,6 +3,10 @@ import psycopg2
 from dotenv import load_dotenv
 import os
 from fastapi import FastAPI
+from core.reasoning.query_parser import parse_query
+from core.reasoning.retriever import retrieve_articles
+from core.reasoning.answer_builder import build_answer
+
 
 load_dotenv()
 
@@ -20,8 +24,21 @@ def get_connection():
         password=DB_PASSWORD,
     )
 
+def load_parts_cache():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT part_uid, part_name FROM parts")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    return [{"part_uid": r[0], "name": r[1].lower()} for r in rows]
+
 
 app = FastAPI()
+
+PARTS_CACHE = load_parts_cache()
+
 
 app.get("/")
 
@@ -116,5 +133,18 @@ def read_articles_by_part(part_uid: int):
             }
             for r in row
         ]
+    except Exception as e:
+        return {"404": "Article not found"}
+
+
+@app.get("/v1/ask")
+def ask_question(q: str):
+    try:
+        conn = get_connection()
+        parsed_query = parse_query(q,PARTS_CACHE)
+        articles = retrieve_articles(conn, parsed_query)
+        answer = build_answer(parsed_query, articles)
+        conn.close()
+        return answer
     except Exception as e:
         return {"404": "Article not found"}
