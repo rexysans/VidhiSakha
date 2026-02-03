@@ -137,14 +137,27 @@ def read_articles_by_part(part_uid: int):
         return {"404": "Article not found"}
 
 
+# @app.get("/v1/ask")
+# def ask_question(q: str):
+#     try:
+#         conn = get_connection()
+#         parsed_query = parse_query(q,PARTS_CACHE)
+#         articles = retrieve_articles(conn, parsed_query)
+#         answer = build_answer(parsed_query, articles)
+#         conn.close()
+#         return answer
+#     except Exception as e:
+#         return {"404": "Article not found"}
+    
+
 @app.get("/v1/ask")
 def ask_question(q: str):
     try:
         conn = get_connection()
-        parsed_query = parse_query(q,PARTS_CACHE)
-        articles = retrieve_articles(conn, parsed_query)
-        answer = build_answer(parsed_query, articles)
+        articles = retrieve_articles(conn, q)
+        answer = build_answer(q, articles)
         conn.close()
-        return answer
+        return {"answer": answer}
     except Exception as e:
-        return {"404": "Article not found"}
+        raise e
+        # return {"404": "Article not found"}
