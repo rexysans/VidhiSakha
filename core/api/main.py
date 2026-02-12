@@ -24,6 +24,7 @@ def get_connection():
         password=DB_PASSWORD,
     )
 
+
 def load_parts_cache():
     conn = get_connection()
     cur = conn.cursor()
@@ -148,16 +149,66 @@ def read_articles_by_part(part_uid: int):
 #         return answer
 #     except Exception as e:
 #         return {"404": "Article not found"}
-    
+
 
 @app.get("/v1/ask")
 def ask_question(q: str):
     try:
+
         conn = get_connection()
         articles = retrieve_articles(conn, q)
-        answer = build_answer(q, articles)
+
+        if not articles:
+            conn.close()
+            return {
+                "answer": {
+                    "answer": "No directly relevant legal provision was found.",
+                    "citations": [],
+                }
+            }
+        best = articles[0]
+        second_best = articles[1] if len(articles) > 1 else None
+   
+        ABS_LIMIT = 1.15
+        REL_GAP = 0.005
+
+        ## Debug 
+        for article in articles:
+            print(article["title"], article["distance"])
+
+
+
+                # absolute junk rejection
+        if best["distance"] > ABS_LIMIT:
+            conn.close()
+            return {
+                "answer": {
+                    "answer": "No directly relevant legal provision was found.",
+                    "citations": []
+                }
+            }
+
+
+
+
+            # relative sanity gate
+        if second_best and (second_best["distance"] - best["distance"]) < REL_GAP:
+            conn.close()
+            return {
+                "answer": {
+                    "answer": "No directly relevant legal provision was found.",
+                    "citations": []
+                }
+            }
+        threshold = 1.1
+
+
+        filtered = [best]
+
+        filtered += [a for a in articles[1:] if a["distance"] <= threshold]
+        answer = build_answer(q, filtered)
         conn.close()
         return {"answer": answer}
     except Exception as e:
         raise e
-        # return {"404": "Article not found"}
+    

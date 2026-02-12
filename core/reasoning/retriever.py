@@ -9,16 +9,16 @@ def retrieve_articles(conn, query: str, k=5):
     curr = conn.cursor()
     curr.execute(
         """
-        SELECT article_id, title, full_text
+        SELECT article_id, title, full_text, embedding <-> %s::vector AS distance
         FROM articles
-        ORDER BY embedding <->%s::vector
+        ORDER BY distance
         LIMIT %s
     """,
         (q_emb, k),
     )
     rows = curr.fetchall()
     curr.close()
-    return [{"article-id": r[0], "title": r[1], "full_text": r[2]} for r in rows]
+    return [{"article-id": r[0], "title": r[1], "full_text": r[2], "distance": r[3]} for r in rows]
 
 
 # def retrieve_articles(conn, parsed_query: dict):
