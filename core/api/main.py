@@ -166,42 +166,60 @@ def ask_question(q: str):
                     "citations": [],
                 }
             }
-        best = articles[0]
-        second_best = articles[1] if len(articles) > 1 else None
-   
+
+        # Step 1: Compute semantic best separately (for gates)
+        semantic_sorted = sorted(articles, key=lambda a: a["distance"])
+        semantic_best = semantic_sorted[0]
+        semantic_second = semantic_sorted[1] if len(semantic_sorted) > 1 else None
+
         ABS_LIMIT = 1.15
         REL_GAP = 0.005
 
-        ## Debug 
+        ## Debug
         for article in articles:
             print(article["title"], article["distance"])
 
+        # Step 2: Semantic sanity gates (check if semantic signal is real)
+        keywords = q.lower().split()
 
+        def keyword_score(article):
+            text = (article["title"] + " " + article["full_text"]).lower()
+            return sum(k in text for k in keywords)
 
-                # absolute junk rejection
-        if best["distance"] > ABS_LIMIT:
+        # Absolute junk rejection with keyword override
+        # Only reject if semantic weak AND keyword score is zero
+        if semantic_best["distance"] > ABS_LIMIT and keyword_score(semantic_best) == 0:
             conn.close()
             return {
                 "answer": {
                     "answer": "No directly relevant legal provision was found.",
-                    "citations": []
+                    "citations": [],
                 }
             }
 
-
-
-
-            # relative sanity gate
-        if second_best and (second_best["distance"] - best["distance"]) < REL_GAP:
+        # Relative sanity gate (using semantic distances)
+        if (
+            semantic_second
+            and (semantic_second["distance"] - semantic_best["distance"]) < REL_GAP
+        ):
             conn.close()
             return {
                 "answer": {
                     "answer": "No directly relevant legal provision was found.",
-                    "citations": []
+                    "citations": [],
                 }
             }
+
+        # Step 3: Keyword reranking for final answer selection
+        articles.sort(
+            key=lambda a: (
+                -keyword_score(a),  # keyword relevance first
+                a["distance"],  # semantic tie-breaker
+            )
+        )
+
+        best = articles[0]
         threshold = 1.1
-
 
         filtered = [best]
 
@@ -211,4 +229,3 @@ def ask_question(q: str):
         return {"answer": answer}
     except Exception as e:
         raise e
-    

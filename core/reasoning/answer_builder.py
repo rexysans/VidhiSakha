@@ -51,7 +51,7 @@ def build_answer(query:str,articles:list)->dict:
         
     best  = articles[0]
     
-    rule = f"{best["title"]} governs this situation"
+    rule = f"{best['title']} governs this situation"
     exception = ""
     if "restriction" in best["full_text"].lower():
         exception = (
