@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # The new high-resolution engine
-model = SentenceTransformer('BAAI/bge-m3')
+model = SentenceTransformer('BAAI/bge-m3',device="cpu")
 
 conn = psycopg2.connect(
     host=os.getenv("DB_HOST"),

@@ -1,0 +1,318 @@
+============================================================
+Query: equality before law
+Expected: 14
+Predicted: 14
+PASS
+============================================================
+Query: abolition of untouchability
+Expected: 17
+Predicted: 17
+PASS
+============================================================
+Query: freedom of religion
+Expected: 25
+Predicted: 25
+PASS
+============================================================
+Query: minority educational institutions
+Expected: 30
+Predicted: 30
+PASS
+============================================================
+Query: right to constitutional remedies
+Expected: 32
+Predicted: 32
+PASS
+============================================================
+Query: protection against double jeopardy
+Expected: 20
+Predicted: None
+FAIL
+============================================================
+Query: forced labour prohibition
+Expected: 23
+Predicted: 23
+PASS
+============================================================
+Query: child labour prohibition
+Expected: 24
+Predicted: 24
+PASS
+============================================================
+Query: freedom to form associations
+Expected: 19
+Predicted: 19
+PASS
+============================================================
+Query: citizenship by birth
+Expected: 5
+Predicted: 5
+PASS
+============================================================
+Query: migrants from pakistan citizenship
+Expected: 6
+Predicted: 7
+FAIL
+============================================================
+Query: foreign citizenship disqualification
+Expected: 9
+Predicted: 191
+FAIL
+============================================================
+Query: parliament power over citizenship
+Expected: 11
+Predicted: 11
+PASS
+============================================================
+Query: national emergency proclamation
+Expected: 352
+Predicted: 352
+PASS
+============================================================
+Query: suspension of article 19 during emergency
+Expected: 358
+Predicted: 358
+PASS
+============================================================
+Query: financial emergency
+Expected: 360
+Predicted: 360
+PASS
+============================================================
+Query: parliament power during emergency
+Expected: 353
+Predicted: 250
+FAIL
+============================================================
+Query: president rule in state
+Expected: 356
+Predicted: 59
+FAIL
+============================================================
+Query: reservation in public employment
+Expected: 16
+Predicted: 16
+PASS
+============================================================
+Query: reservation for scheduled castes services
+Expected: 335
+Predicted: 332
+FAIL
+============================================================
+Query: reservation of seats in panchayats
+Expected: 243D
+Predicted: 243D
+PASS
+============================================================
+Query: reservation in municipalities
+Expected: 243T
+Predicted: 243T
+PASS
+============================================================
+Query: uniform civil code
+Expected: 44
+Predicted: 44
+PASS
+============================================================
+Query: equal pay for equal work
+Expected: 39
+Predicted: 39
+PASS
+============================================================
+Query: free legal aid
+Expected: 39A
+Predicted: 39
+FAIL
+============================================================
+Query: protection of environment
+Expected: 48A
+Predicted: 48A
+PASS
+============================================================
+Query: separation of judiciary from executive
+Expected: 50
+Predicted: 50
+PASS
+============================================================
+Query: freedom restrictions
+Expected: 19
+Predicted: 302
+FAIL
+============================================================
+Query: state cannot discriminate
+Expected: 15
+Predicted: 15
+PASS
+============================================================
+Query: right to life
+Expected: 21
+Predicted: 21
+PASS
+============================================================
+Query: public order restriction speech
+Expected: 19
+Predicted: 19
+PASS
+============================================================
+Query: preventive detention
+Expected: 22
+Predicted: 373
+FAIL
+============================================================
+Query: can government stop free speech
+Expected: 19
+Predicted: None
+FAIL
+============================================================
+Query: can state deny job based on caste
+Expected: 16
+Predicted: 14
+FAIL
+============================================================
+Query: detained without lawyer
+Expected: 22
+Predicted: 22
+PASS
+============================================================
+Query: court writ powers
+Expected: 32
+Predicted: 139
+FAIL
+============================================================
+Query: Article 21
+Expected: 21
+Predicted: 373
+FAIL
+============================================================
+Query: Article 19 restrictions
+Expected: 19
+Predicted: 358
+FAIL
+============================================================
+Query: Article 356 explanation
+Expected: 356
+Predicted: 357
+FAIL
+============================================================
+Query: Explain Article 14
+Expected: 14
+Predicted: 14
+PASS
+============================================================
+Query: how to cook pasta
+Expected: None
+Predicted: None
+JUNK PASS
+============================================================
+Query: best programming language 2025
+Expected: None
+Predicted: None
+JUNK PASS
+============================================================
+Query: weather in delhi
+Expected: None
+Predicted: None
+JUNK PASS
+============================================================
+Query: who is prime minister of japan
+Expected: None
+Predicted: None
+JUNK PASS
+============================================================
+Query: how to build a startup
+Expected: None
+Predicted: None
+JUNK PASS
+============================================================
+Query: quantum computing basics
+Expected: None
+Predicted: None
+JUNK PASS
+============================================================
+Query: football world cup winner
+Expected: None
+Predicted: None
+JUNK PASS
+============================================================
+Query: reservation
+Expected: 16
+Predicted: 243T
+FAIL
+============================================================
+Query: jobs equality
+Expected: 16
+Predicted: 16
+PASS
+============================================================
+Query: religious institution management
+Expected: 26
+Predicted: 26
+PASS
+============================================================
+Query: religious tax payment
+Expected: 27
+Predicted: 27
+PASS
+============================================================
+Query: religious instruction in schools
+Expected: 28
+Predicted: 28
+PASS
+
+Core Accuracy: 29
+Junk Accuracy: 7
+Total Queries: 52
+Overall Accuracy: 0.6923076923076923
+Query                                    | Expected   | In Top 20?
+-----------------------------------------------------------------
+equality before law                      | 14         | ✅ YES
+abolition of untouchability              | 17         | ✅ YES
+freedom of religion                      | 25         | ✅ YES
+minority educational institutions        | 30         | ✅ YES
+right to constitutional remedies         | 32         | ✅ YES
+protection against double jeopardy       | 20         | ✅ YES
+forced labour prohibition                | 23         | ✅ YES
+child labour prohibition                 | 24         | ✅ YES
+freedom to form associations             | 19         | ✅ YES
+citizenship by birth                     | 5          | ✅ YES
+migrants from pakistan citizenship       | 6          | ✅ YES
+foreign citizenship disqualification     | 9          | ✅ YES
+parliament power over citizenship        | 11         | ✅ YES
+national emergency proclamation          | 352        | ✅ YES
+suspension of article 19 during emergenc | 358        | ✅ YES
+financial emergency                      | 360        | ✅ YES
+parliament power during emergency        | 353        | ✅ YES
+president rule in state                  | 356        | ✅ YES
+reservation in public employment         | 16         | ✅ YES
+reservation for scheduled castes service | 335        | ✅ YES
+reservation of seats in panchayats       | 243D       | ✅ YES
+reservation in municipalities            | 243T       | ✅ YES
+uniform civil code                       | 44         | ✅ YES
+equal pay for equal work                 | 39         | ✅ YES
+free legal aid                           | 39A        | ❌ NO
+protection of environment                | 48A        | ✅ YES
+separation of judiciary from executive   | 50         | ✅ YES
+freedom restrictions                     | 19         | ✅ YES
+state cannot discriminate                | 15         | ✅ YES
+right to life                            | 21         | ✅ YES
+public order restriction speech          | 19         | ✅ YES
+preventive detention                     | 22         | ✅ YES
+can government stop free speech          | 19         | ✅ YES
+can state deny job based on caste        | 16         | ✅ YES
+detained without lawyer                  | 22         | ✅ YES
+court writ powers                        | 32         | ✅ YES
+Article 21                               | 21         | ❌ NO
+Article 19 restrictions                  | 19         | ✅ YES
+Article 356 explanation                  | 356        | ✅ YES
+Explain Article 14                       | 14         | ✅ YES
+reservation                              | 16         | ❌ NO
+jobs equality                            | 16         | ✅ YES
+religious institution management         | 26         | ✅ YES
+religious tax payment                    | 27         | ✅ YES
+religious instruction in schools         | 28         | ✅ YES
+
+==============================
+FINAL RECALL@20: 93.33%
+==============================
+
+STRATEGY: Recall is the bottleneck. Upgrade to BGE-M3 before adding Reranker.

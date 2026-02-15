@@ -5,6 +5,7 @@ import os
 from fastapi import FastAPI
 from core.reasoning.query_parser import parse_query
 from core.reasoning.retriever import retrieve_articles
+from core.reasoning.reranker import legal_reranker
 from core.reasoning.answer_builder import build_answer
 
 
@@ -154,78 +155,42 @@ def read_articles_by_part(part_uid: int):
 @app.get("/v1/ask")
 def ask_question(q: str):
     try:
-
         conn = get_connection()
-        articles = retrieve_articles(conn, q)
 
-        if not articles:
+        # 1. RETRIEVAL (The 'Recall' Phase)
+        # Fetch 20 candidates using BGE-M3
+        initial_candidates = retrieve_articles(conn, q, k=20)
+
+        if not initial_candidates:
+            conn.close()
+            return {"answer": {"answer": "No legal provisions found.", "citations": []}}
+
+        # 2. RERANKING (The 'Precision' Phase)
+        # Use our new specialized reranker module
+        reranked_results = legal_reranker.rerank(q, initial_candidates)
+
+        # 3. JUNK GATE (The 'Safety' Phase)
+        # Based on initial benchmarks, 1.0 is a solid starting threshold
+        best_doc = reranked_results[0]
+        print(f"article: {best_doc['title']},rerank score: {best_doc['rerank_score']}")
+        JUNK_THRESHOLD = -1.0
+
+        if best_doc["rerank_score"] < JUNK_THRESHOLD:
             conn.close()
             return {
                 "answer": {
-                    "answer": "No directly relevant legal provision was found.",
+                    "answer": "No directly relevant legal provision found.",
                     "citations": [],
                 }
             }
 
-        # Step 1: Compute semantic best separately (for gates)
-        semantic_sorted = sorted(articles, key=lambda a: a["distance"])
-        semantic_best = semantic_sorted[0]
-        semantic_second = semantic_sorted[1] if len(semantic_sorted) > 1 else None
-
-        ABS_LIMIT = 1.15
-        REL_GAP = 0.005
-
-        ## Debug
-        for article in articles:
-            print(article["title"], article["distance"])
-
-        # Step 2: Semantic sanity gates (check if semantic signal is real)
-        keywords = q.lower().split()
-
-        def keyword_score(article):
-            text = (article["title"] + " " + article["full_text"]).lower()
-            return sum(k in text for k in keywords)
-
-        # Absolute junk rejection with keyword override
-        # Only reject if semantic weak AND keyword score is zero
-        if semantic_best["distance"] > ABS_LIMIT and keyword_score(semantic_best) == 0:
-            conn.close()
-            return {
-                "answer": {
-                    "answer": "No directly relevant legal provision was found.",
-                    "citations": [],
-                }
-            }
-
-        # Relative sanity gate (using semantic distances)
-        if (
-            semantic_second
-            and (semantic_second["distance"] - semantic_best["distance"]) < REL_GAP
-        ):
-            conn.close()
-            return {
-                "answer": {
-                    "answer": "No directly relevant legal provision was found.",
-                    "citations": [],
-                }
-            }
-
-        # Step 3: Keyword reranking for final answer selection
-        articles.sort(
-            key=lambda a: (
-                -keyword_score(a),  # keyword relevance first
-                a["distance"],  # semantic tie-breaker
-            )
-        )
-
-        best = articles[0]
-        threshold = 1.1
-
-        filtered = [best]
-
-        filtered += [a for a in articles[1:] if a["distance"] <= threshold]
-        answer = build_answer(q, filtered)
+        # 4. ANSWER BUILDING
+        # Send only the logically-best document for the final answer
+        answer = build_answer(q, [best_doc])
         conn.close()
+
         return {"answer": answer}
+
     except Exception as e:
-        raise e
+        print(f"Server Error: {e}")
+        return {"error": "Internal processing error"}
