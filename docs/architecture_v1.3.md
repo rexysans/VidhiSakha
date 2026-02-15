@@ -4,10 +4,10 @@
 
 ```mermaid
 graph TD
-    Q[User Query] --> VR[Vector Retrieval (BGE-M3, k=40)]
-    VR --> CR[CrossEncoder Reranking (ms-marco-MiniLM)]
-    CR --> HS[Heuristic Structural Adjustments]
-    HS --> TP[Top-1 Prediction]
+    Q["User Query"] --> VR["Vector Retrieval (BGE-M3, k=40)"]
+    VR --> CR["CrossEncoder Reranking (ms-marco-MiniLM)"]
+    CR --> HS["Heuristic Structural Adjustments"]
+    HS --> TP["Top-1 Prediction"]
 ```
 
 ---
