@@ -1,4 +1,4 @@
-# 📘 VidhiSakhā – Architecture v2
+# 📘 VidhiSakhā – Architecture v1.2
 
 ## 1. System Overview
 

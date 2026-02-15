@@ -1,4 +1,4 @@
-# VidhiSakhā — Technical Architecture v1
+# VidhiSakhā — Technical Architecture v1.1
 
 ## 1. System Overview
 

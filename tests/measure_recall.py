@@ -1,13 +1,10 @@
 import psycopg2
 import os
-
 from dotenv import load_dotenv
 from core.reasoning.retriever import retrieve_articles
+from tests.evaluate import test_cases
 
 load_dotenv()
-
-# Import the test cases from your evaluate.py
-from tests.evaluate import test_cases
 
 def get_connection():
     return psycopg2.connect(
@@ -22,18 +19,18 @@ def run_recall_benchmark():
     hits = 0
     total_valid = 0
     
-    print(f"{'Query':<40} | {'Expected':<10} | {'In Top 20?'}")
+    # [FIX]: Header updated to reflect the production net size
+    print(f"{'Query':<40} | {'Expected':<10} | {'In Top 40?'}")
     print("-" * 65)
 
     for q, expected in test_cases.items():
-        # Skip junk queries for recall measurement (they shouldn't have a hit)
         if expected is None:
             continue
         
         total_valid += 1
         
-        # We retrieve 20 articles to see if the target is in the net
-        results = retrieve_articles(conn, q, k=20)
+        # [ALIGNED]: Matches your production k=40 setting
+        results = retrieve_articles(conn, q, k=40)
         retrieved_ids = [str(r["article-id"]) for r in results]
         
         found = expected in retrieved_ids
@@ -46,14 +43,17 @@ def run_recall_benchmark():
     conn.close()
     
     recall_score = (hits / total_valid) * 100
-    print("\n" + "="*30)
-    print(f"FINAL RECALL@20: {recall_score:.2f}%")
-    print("="*30)
+    print("\n" + "="*40)
+    # [FIX]: Label corrected to RECALL@40
+    print(f"FINAL RECALL@40: {recall_score:.2f}%")
+    print("="*40)
     
-    if recall_score >= 95:
-        print("\nSTRATEGY: Recall is strong. DO NOT upgrade embeddings. Proceed to Reranker.")
+    if recall_score >= 98:
+        print("\n🏆 RECALL MASTERED: The answer is almost always in the pool.")
+        print("STRATEGY: Stop tuning the retriever. All remaining errors are Reranker logic issues.")
     else:
-        print("\nSTRATEGY: Recall is the bottleneck. Upgrade to BGE-M3 before adding Reranker.")
+        print("\n⚠️ RECALL LEAK: Some articles are still missing from the top 40.")
+        print("STRATEGY: Check if those missing articles were properly embedded.")
 
 if __name__ == "__main__":
     run_recall_benchmark()

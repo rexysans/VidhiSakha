@@ -159,7 +159,7 @@ def ask_question(q: str):
 
         # 1. RETRIEVAL (The 'Recall' Phase)
         # Fetch 20 candidates using BGE-M3
-        initial_candidates = retrieve_articles(conn, q, k=20)
+        initial_candidates = retrieve_articles(conn, q, k=40)
 
         if not initial_candidates:
             conn.close()
@@ -173,7 +173,7 @@ def ask_question(q: str):
         # Based on initial benchmarks, 1.0 is a solid starting threshold
         best_doc = reranked_results[0]
         print(f"article: {best_doc['title']},rerank score: {best_doc['rerank_score']}")
-        JUNK_THRESHOLD = -1.0
+        JUNK_THRESHOLD = -5.0
 
         if best_doc["rerank_score"] < JUNK_THRESHOLD:
             conn.close()
