@@ -7,7 +7,7 @@ from core.reasoning.query_parser import parse_query
 from core.reasoning.retriever import retrieve_articles
 from core.reasoning.reranker import legal_reranker
 from core.reasoning.answer_builder import build_answer
-
+from core.reasoning.ltr.inference import VidhiSakhaLTRInference
 
 load_dotenv()
 
@@ -15,6 +15,8 @@ DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+ltr_engine = VidhiSakhaLTRInference()
 
 
 def get_connection():
@@ -152,31 +154,91 @@ def read_articles_by_part(part_uid: int):
 #         return {"404": "Article not found"}
 
 
+# @app.get("/v1/ask")
+# def ask_question(q: str):
+#     try:
+#         conn = get_connection()
+
+#         # 1. RETRIEVAL (The 'Recall' Phase)
+#         # Fetch 20 candidates using BGE-M3
+#         initial_candidates = retrieve_articles(conn, q, k=40)
+
+#         if not initial_candidates:
+#             conn.close()
+#             return {"answer": {"answer": "No legal provisions found.", "citations": []}}
+
+#         # 2. RERANKING (The 'Precision' Phase)
+#         # Use our new specialized reranker module
+#         reranked_results = legal_reranker.rerank(q, initial_candidates)
+
+#         # # 3. JUNK GATE (The 'Safety' Phase)
+#         # # Based on initial benchmarks, 1.0 is a solid starting threshold
+#         # best_doc = reranked_results[0]
+
+#         ltr_results = ltr_engine.rank(q, reranked_results)
+#         best_doc = ltr_results[0]
+
+
+#         print(f"article: {best_doc['title']},rerank score: {best_doc['rerank_score']}")
+#         JUNK_THRESHOLD = -5.0
+
+#         if best_doc["rerank_score"] < JUNK_THRESHOLD:
+#             conn.close()
+#             return {
+#                 "answer": {
+#                     "answer": "No directly relevant legal provision found.",
+#                     "citations": [],
+#                 }
+#             }
+
+#         # 4. ANSWER BUILDING
+#         # Send only the logically-best document for the final answer
+#         answer = build_answer(q, [best_doc])
+#         conn.close()
+
+#         return {"answer": answer}
+
+#     except Exception as e:
+#         print(f"Server Error: {e}")
+#         return {"error": "Internal processing error"}
+
+
 @app.get("/v1/ask")
 def ask_question(q: str):
     try:
         conn = get_connection()
 
-        # 1. RETRIEVAL (The 'Recall' Phase)
-        # Fetch 20 candidates using BGE-M3
+        # 1. RETRIEVAL
         initial_candidates = retrieve_articles(conn, q, k=40)
 
         if not initial_candidates:
             conn.close()
-            return {"answer": {"answer": "No legal provisions found.", "citations": []}}
+            return {
+                "answer": {
+                    "answer": "No legal provisions found.",
+                    "citations": [],
+                }
+            }
 
-        # 2. RERANKING (The 'Precision' Phase)
-        # Use our new specialized reranker module
+        # 2. CROSS-ENCODER RERANKING
         reranked_results = legal_reranker.rerank(q, initial_candidates)
 
-        # 3. JUNK GATE (The 'Safety' Phase)
-        # Based on initial benchmarks, 1.0 is a solid starting threshold
-        best_doc = reranked_results[0]
-        print(f"article: {best_doc['title']},rerank score: {best_doc['rerank_score']}")
-        JUNK_THRESHOLD = -5.0
+        # 3. LTR FINAL RANKING
+        ltr_results = ltr_engine.rank(q, reranked_results)
 
-        if best_doc["rerank_score"] < JUNK_THRESHOLD:
+        best_doc = ltr_results[0]
+
+        print(
+            f"Article: {best_doc['title']} | " f"LTR Score: {best_doc['ltr_score']:.4f}"
+        )
+
+        # 4. LTR-BASED JUNK GATE
+        LTR_THRESHOLD = 0.9811
+
+        if best_doc["ltr_score"] < LTR_THRESHOLD:
+
             conn.close()
+
             return {
                 "answer": {
                     "answer": "No directly relevant legal provision found.",
@@ -184,13 +246,15 @@ def ask_question(q: str):
                 }
             }
 
-        # 4. ANSWER BUILDING
-        # Send only the logically-best document for the final answer
+        # 5. ANSWER BUILDING
         answer = build_answer(q, [best_doc])
+
         conn.close()
 
         return {"answer": answer}
 
     except Exception as e:
+
         print(f"Server Error: {e}")
+
         return {"error": "Internal processing error"}

@@ -1,10 +1,15 @@
 import re
 from sentence_transformers import CrossEncoder
+import torch
 
 class ScalableLegalReranker:
     def __init__(self):
         # Load the 'Logic Brain'
-        self.model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", device="cpu")
+        self.model = CrossEncoder(
+            "BAAI/bge-reranker-v2-m3", 
+            device="cuda",
+            model_kwargs={"torch_dtype": torch.float16}
+        )
         
         # 1. Structural Patterns (Scalable: Works for any law, not just these IDs)
         self.PROCEDURAL_PATTERNS = ["power", "exercise", "procedure", "provisions", "conferment", "transitional"]
