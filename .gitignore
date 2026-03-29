@@ -1,3 +1,4 @@
+# Python / Backend
 venv/
 __pycache__/
 *.pyc
@@ -8,8 +9,23 @@ __pycache__/
 *.db
 *.sqlite3
 *.log
-logs/
 .DS_Store
 Thumbs.db
 docs/db_credentials.md
 .vscode/
+server/dataset/dataset*.csv
+
+# Node / Frontend
+node_modules/
+.next/
+out/
+build/
+.pnp
+.pnp.js
+coverage/
+.npm/
+.eslintcache
+.stylelintcache
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
